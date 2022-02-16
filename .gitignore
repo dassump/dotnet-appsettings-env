@@ -1,0 +1,48 @@
+# macOS
+.DS_Store
+._*
+
+# Windows
+[Dd]esktop.ini
+Thumbs.db
+Thumbs.db:encryptable
+
+# Binary
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Go
+vendor/*
+bin/*
+*.out
+*.test
+__debug_bin
+
+# Build
+[Bb]uild/*
+
+# Environment
+.env
+*.env
+
+# Log
+[Ll]og/*
+*.[Ll]og
+
+# Others
+[Tt]emp/*
+
+# VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+.history/
+
+# Keep
+!.keep
