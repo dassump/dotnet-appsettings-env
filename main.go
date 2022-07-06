@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -62,8 +63,10 @@ func main() {
 		os.Exit(1)
 	}
 
-	err = json.Unmarshal(file_bytes, &content)
-	if err != nil {
+	decoder := json.NewDecoder(bytes.NewReader(file_bytes))
+	decoder.UseNumber()
+
+	if err := decoder.Decode(&content); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
