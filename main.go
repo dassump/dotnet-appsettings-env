@@ -36,9 +36,9 @@ var (
 
 	info       string = "%s (%s)\n\n%s\n%s\n\n"
 	usage      string = "Usage of %s:\n"
-	docker     string = "%s=%s\n"
-	compose    string = "\"%s\": \"%s\"\n"
-	kubernetes string = "- name: \"%s\"\n  value: \"%s\"\n"
+	docker     string = "%s=%q\n"
+	compose    string = "%s: %q\n"
+	kubernetes string = "- name: %q\n  value: %q\n"
 
 	content              map[string]any
 	content_comments     string = `(?m:\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$)`
