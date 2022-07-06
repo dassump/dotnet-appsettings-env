@@ -10,12 +10,10 @@ Convert .NET appsettings.json file to Kubernetes, Docker and Docker-Compose envi
 
 ```shell
 $ dotnet-appsettings-env --help
-dotnet-appsettings-env v1.0.0
+dotnet-appsettings-env (dev)
 
 Convert .NetCore appsettings.json file to Kubernetes, Docker and Docker-Compose environment variables.
-
-Daniel Dias de Assumpção <dassump@gmail.com>
-https://github.com/dassump
+https://github.com/dassump/dotnet-appsettings-env
 
 Usage of dotnet-appsettings-env:
   -file string

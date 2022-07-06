@@ -11,35 +11,46 @@ import (
 )
 
 var (
-	app, version string
-	file         string
-	output       string
-	separator    string
-	content      map[string]interface{}
-	variables    [][]string
-)
+	app         string = "dotnet-appsettings-env"
+	version     string = "dev"
+	description string = "Convert .NET appsettings.json file to Kubernetes, Docker and Docker-Compose environment variables."
+	site        string = "https://github.com/dassump/dotnet-appsettings-env"
 
-const (
-	description  string = "Convert .NET appsettings.json file to Kubernetes, Docker and Docker-Compose environment variables."
-	author_name  string = "Daniel Dias de Assumpção"
-	author_email string = "dassump@gmail.com"
-	site         string = "https://github.com/dassump"
+	file       string
+	file_name  string = "file"
+	file_value string = "./appsettings.json"
+	file_usage string = "Path to file appsettings.json"
+
+	output       string
+	output_name  string = "type"
+	output_value string = "k8s"
+	output_usage string = "Output to Kubernetes (k8s) / Docker (docker) / Docker Compose (compose)"
+
+	separator       string
+	separator_name  string = "separator"
+	separator_value string = "__"
+	separator_usage string = "Separator character"
+
+	content   map[string]interface{}
+	variables [][]string
+
+	info       string = "%s (%s)\n\n%s\n%s\n\n"
+	usage      string = "Usage of %s:\n"
+	docker     string = "%s=%s\n"
+	compose    string = "\"%s\": \"%s\"\n"
+	kubernetes string = "- name: \"%s\"\n  value: \"%s\"\n"
 )
 
 func init() {
 	flag.Usage = func() {
-		fmt.Printf(
-			"%s %s\n\n%s\n\n%s <%s>\n%s\n\n",
-			app, version, description, author_name, author_email, site,
-		)
-
-		fmt.Fprintf(flag.CommandLine.Output(), "Usage of %s:\n", os.Args[0])
+		fmt.Fprintf(flag.CommandLine.Output(), info, app, version, description, site)
+		fmt.Fprintf(flag.CommandLine.Output(), usage, os.Args[0])
 		flag.PrintDefaults()
 	}
 
-	flag.StringVar(&file, "file", "./appsettings.json", "Path to file appsettings.json")
-	flag.StringVar(&output, "type", "k8s", "Output to Kubernetes (k8s) / Docker (docker) / Docker Compose (compose)")
-	flag.StringVar(&separator, "separator", "__", "Separator character")
+	flag.StringVar(&file, file_name, file_value, file_usage)
+	flag.StringVar(&output, output_name, output_value, output_usage)
+	flag.StringVar(&separator, separator_name, separator_value, separator_usage)
 
 	flag.Parse()
 }
@@ -72,12 +83,11 @@ func main() {
 	for _, value := range variables {
 		switch output {
 		case "docker":
-			fmt.Printf("%s=%s\n", value[0], value[1])
+			fmt.Printf(docker, value[0], value[1])
 		case "compose":
-			fmt.Printf("\"%s\": \"%s\"\n", value[0], value[1])
+			fmt.Printf(compose, value[0], value[1])
 		default:
-			fmt.Printf("- name: \"%s\"\n", value[0])
-			fmt.Printf("  value: \"%s\"\n", value[1])
+			fmt.Printf(kubernetes, value[0], value[1])
 		}
 	}
 }
