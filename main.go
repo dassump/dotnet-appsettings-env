@@ -16,7 +16,7 @@ var (
 	output       string
 	separator    string
 	content      map[string]interface{}
-	vars         [][]string
+	variables    [][]string
 )
 
 const (
@@ -45,13 +45,13 @@ func init() {
 }
 
 func main() {
-	b, err := ioutil.ReadFile(file)
+	file_bytes, err := ioutil.ReadFile(file)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 
-	err = json.Unmarshal(b, &content)
+	err = json.Unmarshal(file_bytes, &content)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -59,53 +59,53 @@ func main() {
 
 	parser(content, nil)
 
-	sort.Slice(vars[:], func(i, j int) bool {
-		for x := range vars[i] {
-			if vars[i][x] == vars[j][x] {
+	sort.Slice(variables[:], func(i, j int) bool {
+		for key := range variables[i] {
+			if variables[i][key] == variables[j][key] {
 				continue
 			}
-			return vars[i][x] < vars[j][x]
+			return variables[i][key] < variables[j][key]
 		}
 		return false
 	})
 
-	for _, v := range vars {
+	for _, value := range variables {
 		switch output {
 		case "docker":
-			fmt.Printf("%s=%s\n", v[0], v[1])
+			fmt.Printf("%s=%s\n", value[0], value[1])
 		case "compose":
-			fmt.Printf("\"%s\": \"%s\"\n", v[0], v[1])
+			fmt.Printf("\"%s\": \"%s\"\n", value[0], value[1])
 		default:
-			fmt.Printf("- name: \"%s\"\n", v[0])
-			fmt.Printf("  value: \"%s\"\n", v[1])
+			fmt.Printf("- name: \"%s\"\n", value[0])
+			fmt.Printf("  value: \"%s\"\n", value[1])
 		}
 	}
 }
 
-func parser(m map[string]interface{}, root []string) {
-	for k, v := range m {
-		key := append(root, k)
+func parser(data map[string]interface{}, root []string) {
+	for key, value := range data {
+		keys := append(root, key)
 
-		switch v.(type) {
+		switch value.(type) {
 		case []interface{}:
-			for k, v := range v.([]interface{}) {
-				switch v.(type) {
+			for key, value := range value.([]interface{}) {
+				switch value.(type) {
 				case map[string]interface{}:
-					parser(v.(map[string]interface{}), append(key, fmt.Sprint(k)))
+					parser(value.(map[string]interface{}), append(keys, fmt.Sprint(key)))
 				default:
-					vars = append(vars, []string{
-						fmt.Sprintf("%s__%d", strings.Join(key, separator), k),
-						fmt.Sprint(v),
+					variables = append(variables, []string{
+						fmt.Sprintf("%s__%d", strings.Join(keys, separator), key),
+						fmt.Sprint(value),
 					})
 				}
 
 			}
 		case map[string]interface{}:
-			parser(v.(map[string]interface{}), key)
+			parser(value.(map[string]interface{}), keys)
 		default:
-			vars = append(vars, []string{
-				strings.Join(key, separator),
-				fmt.Sprint(v),
+			variables = append(variables, []string{
+				strings.Join(keys, separator),
+				fmt.Sprint(value),
 			})
 		}
 	}
