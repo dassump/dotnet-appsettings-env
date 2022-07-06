@@ -32,14 +32,14 @@ var (
 	separator_value string = "__"
 	separator_usage string = "Separator character"
 
-	content   map[string]any
-	variables [][]string
-
 	info       string = "%s (%s)\n\n%s\n%s\n\n"
 	usage      string = "Usage of %s:\n"
 	docker     string = "%s=%s\n"
 	compose    string = "\"%s\": \"%s\"\n"
 	kubernetes string = "- name: \"%s\"\n  value: \"%s\"\n"
+
+	content   = map[string]any{}
+	variables = map[string]string{}
 )
 
 func init() {
@@ -71,32 +71,28 @@ func main() {
 		os.Exit(1)
 	}
 
-	parser(content, nil)
+	parser(content, variables, nil)
 
-	sort.Slice(variables[:], func(i, j int) bool {
-		for key := range variables[i] {
-			if variables[i][key] == variables[j][key] {
-				continue
-			}
-			return variables[i][key] < variables[j][key]
-		}
-		return false
-	})
+	keys := make([]string, 0, len(variables))
+	for key := range variables {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
 
-	for _, value := range variables {
+	for _, key := range keys {
 		switch output {
 		case "docker":
-			fmt.Printf(docker, value[0], value[1])
+			fmt.Printf(docker, key, variables[key])
 		case "compose":
-			fmt.Printf(compose, value[0], value[1])
+			fmt.Printf(compose, key, variables[key])
 		default:
-			fmt.Printf(kubernetes, value[0], value[1])
+			fmt.Printf(kubernetes, key, variables[key])
 		}
 	}
 }
 
-func parser(data map[string]any, root []string) {
-	for key, value := range data {
+func parser(in map[string]any, out map[string]string, root []string) {
+	for key, value := range in {
 		keys := append(root, key)
 
 		switch value.(type) {
@@ -104,22 +100,16 @@ func parser(data map[string]any, root []string) {
 			for key, value := range value.([]any) {
 				switch value.(type) {
 				case map[string]any:
-					parser(value.(map[string]any), append(keys, fmt.Sprint(key)))
+					parser(value.(map[string]any), out, append(keys, fmt.Sprint(key)))
 				default:
-					variables = append(variables, []string{
-						fmt.Sprintf("%s__%d", strings.Join(keys, separator), key),
-						fmt.Sprint(value),
-					})
+					out[fmt.Sprintf("%s__%d", strings.Join(keys, separator), key)] = fmt.Sprint(value)
 				}
 
 			}
 		case map[string]any:
-			parser(value.(map[string]any), keys)
+			parser(value.(map[string]any), out, keys)
 		default:
-			variables = append(variables, []string{
-				strings.Join(keys, separator),
-				fmt.Sprint(value),
-			})
+			out[strings.Join(keys, separator)] = fmt.Sprint(value)
 		}
 	}
 }
