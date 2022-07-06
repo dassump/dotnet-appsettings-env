@@ -110,7 +110,10 @@ func main() {
 	for key := range variables {
 		keys = append(keys, key)
 	}
-	sort.Strings(keys)
+
+	sort.Slice(keys, func(i, j int) bool {
+		return strings.ToLower(keys[i]) < strings.ToLower(keys[j])
+	})
 
 	for _, key := range keys {
 		switch output {
