@@ -22,6 +22,7 @@ var (
 	file_name  string = "file"
 	file_value string = "./appsettings.json"
 	file_usage string = "Path to file appsettings.json"
+	file_error string = "Error: %s\n"
 
 	output       string
 	output_name  string = "type"
@@ -39,8 +40,11 @@ var (
 	compose    string = "\"%s\": \"%s\"\n"
 	kubernetes string = "- name: \"%s\"\n  value: \"%s\"\n"
 
-	content          map[string]any
-	content_comments string = `(?m:\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$)`
+	content              map[string]any
+	content_comments     string = `(?m:\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$)`
+	content_error        string = "Error: %s in %s\n"
+	content_syntax_error string = "Error: %s in %s\n\n... line %d, column %d\n%s >>> %s <<< %s\n...\n"
+	content_syntax_near  int64  = 60
 
 	variables = map[string]string{}
 )
@@ -62,7 +66,7 @@ func init() {
 func main() {
 	file_bytes, err := ioutil.ReadFile(file)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Printf(file_error, err)
 		os.Exit(1)
 	}
 
@@ -72,7 +76,31 @@ func main() {
 	decoder.UseNumber()
 
 	if err := decoder.Decode(&content); err != nil {
-		fmt.Println(err)
+		switch err := err.(type) {
+		case *json.SyntaxError:
+			new_line := []byte("\n")
+			line := 1 + bytes.Count(file_bytes[:err.Offset], new_line)
+			column := int(err.Offset) - bytes.LastIndex(file_bytes[:err.Offset], new_line) - len(new_line)
+
+			near_before := err.Offset - content_syntax_near
+			if err.Offset-content_syntax_near < 0 {
+				near_before = 0
+			}
+
+			near_after := err.Offset + content_syntax_near
+			if err.Offset+content_syntax_near > int64(len(file_bytes)) {
+				near_after = int64(len(file_bytes))
+			}
+
+			fmt.Printf(
+				content_syntax_error,
+				err, file, line, column,
+				file_bytes[near_before:err.Offset-1], file_bytes[err.Offset-1:err.Offset], file_bytes[err.Offset:near_after],
+			)
+		default:
+			fmt.Printf(content_error, err, file)
+		}
+
 		os.Exit(1)
 	}
 
