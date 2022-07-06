@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"regexp"
 	"sort"
 	"strings"
 )
@@ -38,7 +39,9 @@ var (
 	compose    string = "\"%s\": \"%s\"\n"
 	kubernetes string = "- name: \"%s\"\n  value: \"%s\"\n"
 
-	content   = map[string]any{}
+	content          map[string]any
+	content_comments string = `(?m:\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$)`
+
 	variables = map[string]string{}
 )
 
@@ -62,6 +65,8 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+
+	file_bytes = regexp.MustCompile(content_comments).ReplaceAll(file_bytes, nil)
 
 	decoder := json.NewDecoder(bytes.NewReader(file_bytes))
 	decoder.UseNumber()
