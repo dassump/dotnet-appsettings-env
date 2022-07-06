@@ -31,7 +31,7 @@ var (
 	separator_value string = "__"
 	separator_usage string = "Separator character"
 
-	content   map[string]interface{}
+	content   map[string]any
 	variables [][]string
 
 	info       string = "%s (%s)\n\n%s\n%s\n\n"
@@ -92,16 +92,16 @@ func main() {
 	}
 }
 
-func parser(data map[string]interface{}, root []string) {
+func parser(data map[string]any, root []string) {
 	for key, value := range data {
 		keys := append(root, key)
 
 		switch value.(type) {
-		case []interface{}:
-			for key, value := range value.([]interface{}) {
+		case []any:
+			for key, value := range value.([]any) {
 				switch value.(type) {
-				case map[string]interface{}:
-					parser(value.(map[string]interface{}), append(keys, fmt.Sprint(key)))
+				case map[string]any:
+					parser(value.(map[string]any), append(keys, fmt.Sprint(key)))
 				default:
 					variables = append(variables, []string{
 						fmt.Sprintf("%s__%d", strings.Join(keys, separator), key),
@@ -110,8 +110,8 @@ func parser(data map[string]interface{}, root []string) {
 				}
 
 			}
-		case map[string]interface{}:
-			parser(value.(map[string]interface{}), keys)
+		case map[string]any:
+			parser(value.(map[string]any), keys)
 		default:
 			variables = append(variables, []string{
 				strings.Join(keys, separator),
