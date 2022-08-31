@@ -2,7 +2,6 @@
 
 Convert .NET appsettings.json file to Kubernetes, Docker and Docker-Compose environment variables.
 
-
 ## Getting started
 
 1. Download a pre-compiled binary from the release [page](https://github.com/dassump/dotnet-appsettings-env/releases).
@@ -12,7 +11,7 @@ Convert .NET appsettings.json file to Kubernetes, Docker and Docker-Compose envi
 $ dotnet-appsettings-env --help
 dotnet-appsettings-env (dev)
 
-Convert .NetCore appsettings.json file to Kubernetes, Docker and Docker-Compose environment variables.
+Convert .NetCore appsettings.json file to Kubernetes, Docker, Docker-Compose and Bicep environment variables.
 https://github.com/dassump/dotnet-appsettings-env
 
 Usage of dotnet-appsettings-env:
@@ -21,9 +20,8 @@ Usage of dotnet-appsettings-env:
   -separator string
         Separator character (default "__")
   -type string
-        Output to Kubernetes (k8s) / Docker (docker) / Docker Compose (compose) (default "k8s")
+        Output to Kubernetes (k8s) / Docker (docker) / Docker Compose (compose) / Bicep (bicep) (default "k8s")
 ```
-
 
 ## Examples
 
@@ -31,64 +29,61 @@ Usage of dotnet-appsettings-env:
 
 ```json
 {
-    "ApiClientId": "*",
-    "ApiClientSecret": "*",
-    "ApiGateway": "*",
-    "Scope": "*",
-    "Middlewares": [
-        {
-            "Name": "api/Auth",
-            "Url": "*"
-        },
-        {
-            "Name": "api/Registration",
-            "Url": "*"
-        }
-    ],
-    "HttpManager": {
-        "IgnoreCertificateValidation": true,
-        "AllowAutoRedirect": true
-    },
-    "Logging": {
-        "Enabled": true,
-        "IncludeScopes": false,
-        "Level": "Information",
-        "Debug": {
-            "LogLevel": {
-                "Default": "Warning"
-            }
-        },
-        "Console": {
-            "LogLevel": {
-                "Default": "Warning"
-            }
-        }
-    },
-    "Serilog": {
-        "Using": [
-            "Serilog.Sinks.File"
-        ],
-        "MinimumLevel": "Debug",
-        "WriteTo": [
-            {
-                "Name": "Console"
-            },
-            {
-                "Name": "File",
-                "Args": {
-                    "path": "Logs/Api.log",
-                    "rollingInterval": "Day",
-                    "fileSizeLimitBytes": "52428800",
-                    "rollOnFileSizeLimit": "true",
-                    "retainedFileCountLimit": "100",
-                    "outputTemplate": "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}"
-                }
-            }
-        ]
-    }
+	"ApiClientId": "*",
+	"ApiClientSecret": "*",
+	"ApiGateway": "*",
+	"Scope": "*",
+	"Middlewares": [
+		{
+			"Name": "api/Auth",
+			"Url": "*"
+		},
+		{
+			"Name": "api/Registration",
+			"Url": "*"
+		}
+	],
+	"HttpManager": {
+		"IgnoreCertificateValidation": true,
+		"AllowAutoRedirect": true
+	},
+	"Logging": {
+		"Enabled": true,
+		"IncludeScopes": false,
+		"Level": "Information",
+		"Debug": {
+			"LogLevel": {
+				"Default": "Warning"
+			}
+		},
+		"Console": {
+			"LogLevel": {
+				"Default": "Warning"
+			}
+		}
+	},
+	"Serilog": {
+		"Using": ["Serilog.Sinks.File"],
+		"MinimumLevel": "Debug",
+		"WriteTo": [
+			{
+				"Name": "Console"
+			},
+			{
+				"Name": "File",
+				"Args": {
+					"path": "Logs/Api.log",
+					"rollingInterval": "Day",
+					"fileSizeLimitBytes": "52428800",
+					"rollOnFileSizeLimit": "true",
+					"retainedFileCountLimit": "100",
+					"outputTemplate": "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}"
+				}
+			}
+		]
+	}
 }
 ```
-
 
 ### Kubernetes
 
@@ -146,7 +141,6 @@ $ dotnet-appsettings-env -type k8s
   value: "File"
 ```
 
-
 ### Docker
 
 ```shell
@@ -177,7 +171,6 @@ Serilog__WriteTo__1__Args__rollingInterval="Day"
 Serilog__WriteTo__1__Args__rollOnFileSizeLimit="true"
 Serilog__WriteTo__1__Name="File"
 ```
-
 
 ### Docker Compose
 
@@ -210,6 +203,110 @@ Serilog__WriteTo__1__Args__rollOnFileSizeLimit: "true"
 Serilog__WriteTo__1__Name: "File"
 ```
 
+### Biceps
+
+```bicep
+{
+name: 'ApiClientId'
+value: '*'
+}
+{
+name: 'ApiClientSecret'
+value: '*'
+}
+{
+name: 'ApiGateway'
+value: '*'
+}
+{
+name: 'HttpManager:AllowAutoRedirect'
+value: 'true'
+}
+{
+name: 'HttpManager:IgnoreCertificateValidation'
+value: 'true'
+}
+{
+name: 'Logging:Console:LogLevel:Default'
+value: 'Warning'
+}
+{
+name: 'Logging:Debug:LogLevel:Default'
+value: 'Warning'
+}
+{
+name: 'Logging:Enabled'
+value: 'true'
+}
+{
+name: 'Logging:IncludeScopes'
+value: 'false'
+}
+{
+name: 'Logging:Level'
+value: 'Information'
+}
+{
+name: 'Middlewares:0:Name'
+value: 'api/Auth'
+}
+{
+name: 'Middlewares:0:Url'
+value: '*'
+}
+{
+name: 'Middlewares:1:Name'
+value: 'api/Registration'
+}
+{
+name: 'Middlewares:1:Url'
+value: '*'
+}
+{
+name: 'Scope'
+value: '*'
+}
+{
+name: 'Serilog:MinimumLevel'
+value: 'Debug'
+}
+{
+name: 'Serilog:Using__0'
+value: 'Serilog.Sinks.File'
+}
+{
+name: 'Serilog:WriteTo:0:Name'
+value: 'Console'
+}
+{
+name: 'Serilog:WriteTo:1:Args:fileSizeLimitBytes'
+value: '52428800'
+}
+{
+name: 'Serilog:WriteTo:1:Args:outputTemplate'
+value: '{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}'
+}
+{
+name: 'Serilog:WriteTo:1:Args:path'
+value: 'Logs/Api.log'
+}
+{
+name: 'Serilog:WriteTo:1:Args:retainedFileCountLimit'
+value: '100'
+}
+{
+name: 'Serilog:WriteTo:1:Args:rollingInterval'
+value: 'Day'
+}
+{
+name: 'Serilog:WriteTo:1:Args:rollOnFileSizeLimit'
+value: 'true'
+}
+{
+name: 'Serilog:WriteTo:1:Name'
+value: 'File'
+}
+```
 
 ## Contributing
 

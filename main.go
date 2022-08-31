@@ -15,7 +15,7 @@ import (
 var (
 	app         string = "dotnet-appsettings-env"
 	version     string = "dev"
-	description string = "Convert .NET appsettings.json file to Kubernetes, Docker and Docker-Compose environment variables."
+	description string = "Convert .NET appsettings.json file to Kubernetes, Docker, Docker-Compose and Bicep environment variables."
 	site        string = "https://github.com/dassump/dotnet-appsettings-env"
 
 	file       string
@@ -27,7 +27,7 @@ var (
 	output       string
 	output_name  string = "type"
 	output_value string = "k8s"
-	output_usage string = "Output to Kubernetes (k8s) / Docker (docker) / Docker Compose (compose)"
+	output_usage string = "Output to Kubernetes (k8s) / Docker (docker) / Docker Compose (compose) / Bicep (bicep)"
 
 	separator       string
 	separator_name  string = "separator"
@@ -39,6 +39,7 @@ var (
 	docker     string = "%s=%q\n"
 	compose    string = "%s: %q\n"
 	kubernetes string = "- name: %q\n  value: %q\n"
+	bicep      string = "{\nname: '%s'\nvalue: '%s'\n}\n"
 
 	content              map[string]any
 	content_comments     string = `(?m:\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$)`
@@ -121,6 +122,8 @@ func main() {
 			fmt.Printf(docker, key, variables[key])
 		case "compose":
 			fmt.Printf(compose, key, variables[key])
+		case "bicep":
+			fmt.Printf(bicep, key, variables[key])
 		default:
 			fmt.Printf(kubernetes, key, variables[key])
 		}
