@@ -17,6 +17,8 @@ var (
 	version     string = "dev"
 	description string = "Convert .NET appsettings.json file to Kubernetes, Docker, Docker-Compose and Bicep environment variables."
 	site        string = "https://github.com/dassump/dotnet-appsettings-env"
+	info        string = "%s (%s)\n\n%s\n%s\n\n"
+	usage       string = "Usage of %s:\n"
 
 	file       string
 	file_name  string = "file"
@@ -28,18 +30,12 @@ var (
 	output_name  string = "type"
 	output_value string = "k8s"
 	output_usage string = "Output to Kubernetes (k8s) / Docker (docker) / Docker Compose (compose) / Bicep (bicep)"
+	output_error string = "Type %s is not valid\n"
 
 	separator       string
 	separator_name  string = "separator"
 	separator_value string = "__"
 	separator_usage string = "Separator character"
-
-	info       string = "%s (%s)\n\n%s\n%s\n\n"
-	usage      string = "Usage of %s:\n"
-	docker     string = "%s=%q\n"
-	compose    string = "%s: %q\n"
-	kubernetes string = "- name: %q\n  value: %q\n"
-	bicep      string = "{\nname: '%s'\nvalue: '%s'\n}\n"
 
 	content              map[string]any
 	content_comments     string = `(?m:\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$)`
@@ -48,6 +44,12 @@ var (
 	content_syntax_near  int64  = 60
 
 	variables = map[string]string{}
+	format    = map[string]string{
+		"k8s":     "- name: %q\n  value: %q\n",
+		"docker":  "%s=%q\n",
+		"compose": "%s: %q\n",
+		"bicep":   "{\nname: '%s'\nvalue: '%s'\n}\n",
+	}
 )
 
 func init() {
@@ -62,6 +64,11 @@ func init() {
 	flag.StringVar(&separator, separator_name, separator_value, separator_usage)
 
 	flag.Parse()
+
+	if _, ok := format[output]; !ok {
+		fmt.Printf(output_error, output)
+		os.Exit(1)
+	}
 }
 
 func main() {
@@ -117,16 +124,7 @@ func main() {
 	})
 
 	for _, key := range keys {
-		switch output {
-		case "docker":
-			fmt.Printf(docker, key, variables[key])
-		case "compose":
-			fmt.Printf(compose, key, variables[key])
-		case "bicep":
-			fmt.Printf(bicep, key, variables[key])
-		default:
-			fmt.Printf(kubernetes, key, variables[key])
-		}
+		fmt.Printf(format[output], key, variables[key])
 	}
 }
 
