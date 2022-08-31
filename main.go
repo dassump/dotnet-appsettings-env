@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"regexp"
 	"sort"
@@ -24,7 +25,7 @@ var (
 	file_name  string = "file"
 	file_value string = "./appsettings.json"
 	file_usage string = "Path to file appsettings.json"
-	file_error string = "Error: %s\n"
+	file_error string = "%s\n"
 
 	output       string
 	output_name  string = "type"
@@ -39,8 +40,8 @@ var (
 
 	content              map[string]any
 	content_comments     string = `(?m:\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$)`
-	content_error        string = "Error: %s in %s\n"
-	content_syntax_error string = "Error: %s in %s\n\n... line %d, column %d\n%s >>> %s <<< %s\n...\n"
+	content_error        string = "%s in %s\n"
+	content_syntax_error string = "%s in %s\n\n... line %d, column %d\n%s >>> %s <<< %s\n...\n"
 	content_syntax_near  int64  = 60
 
 	variables = map[string]string{}
@@ -53,6 +54,9 @@ var (
 )
 
 func init() {
+	log.SetFlags(log.Lmsgprefix)
+	log.SetPrefix("Error: ")
+
 	flag.Usage = func() {
 		fmt.Fprintf(flag.CommandLine.Output(), info, app, version, description, site)
 		fmt.Fprintf(flag.CommandLine.Output(), usage, os.Args[0])
@@ -66,16 +70,14 @@ func init() {
 	flag.Parse()
 
 	if _, ok := format[output]; !ok {
-		fmt.Printf(output_error, output)
-		os.Exit(1)
+		log.Fatalf(output_error, output)
 	}
 }
 
 func main() {
 	file_bytes, err := ioutil.ReadFile(file)
 	if err != nil {
-		fmt.Printf(file_error, err)
-		os.Exit(1)
+		log.Fatalf(file_error, err)
 	}
 
 	file_bytes = regexp.MustCompile(content_comments).ReplaceAll(file_bytes, nil)
@@ -100,16 +102,14 @@ func main() {
 				near_after = int64(len(file_bytes))
 			}
 
-			fmt.Printf(
+			log.Fatalf(
 				content_syntax_error,
 				err, file, line, column,
 				file_bytes[near_before:err.Offset-1], file_bytes[err.Offset-1:err.Offset], file_bytes[err.Offset:near_after],
 			)
 		default:
-			fmt.Printf(content_error, err, file)
+			log.Fatalf(content_error, err, file)
 		}
-
-		os.Exit(1)
 	}
 
 	parser(content, variables, nil)
