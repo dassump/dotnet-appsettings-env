@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"regexp"
@@ -75,7 +74,7 @@ func init() {
 }
 
 func main() {
-	file_bytes, err := ioutil.ReadFile(file)
+	file_bytes, err := os.ReadFile(file)
 	if err != nil {
 		log.Fatalf(file_error, err)
 	}
