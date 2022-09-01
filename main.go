@@ -10,6 +10,9 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+
+	"golang.org/x/text/encoding/unicode"
+	"golang.org/x/text/transform"
 )
 
 var (
@@ -75,6 +78,14 @@ func init() {
 
 func main() {
 	file_bytes, err := os.ReadFile(file)
+	if err != nil {
+		log.Fatalf(file_error, err)
+	}
+
+	_, err = transform.NewReader(
+		bytes.NewReader(file_bytes),
+		unicode.BOMOverride(unicode.UTF8.NewDecoder()),
+	).Read(file_bytes)
 	if err != nil {
 		log.Fatalf(file_error, err)
 	}

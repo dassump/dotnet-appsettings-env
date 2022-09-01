@@ -203,7 +203,7 @@ Serilog__WriteTo__1__Args__rollOnFileSizeLimit: "true"
 Serilog__WriteTo__1__Name: "File"
 ```
 
-### Biceps
+### Bicep
 
 ```bicep
 {
