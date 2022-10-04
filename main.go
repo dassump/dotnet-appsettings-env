@@ -142,16 +142,15 @@ func parser(in map[string]any, out map[string]string, root []string) {
 	for key, value := range in {
 		keys := append(root, key)
 
-		switch value.(type) {
+		switch any(value).(type) {
 		case []any:
 			for key, value := range value.([]any) {
-				switch value.(type) {
+				switch any(value).(type) {
 				case map[string]any:
 					parser(value.(map[string]any), out, append(keys, fmt.Sprint(key)))
 				default:
-					out[fmt.Sprintf("%s__%d", strings.Join(keys, separator), key)] = fmt.Sprint(value)
+					out[fmt.Sprintf("%s%s%d", strings.Join(keys, separator), separator, key)] = fmt.Sprint(value)
 				}
-
 			}
 		case map[string]any:
 			parser(value.(map[string]any), out, keys)
