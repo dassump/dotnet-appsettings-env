@@ -64,11 +64,9 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	_, err = transform.NewReader(
-		bytes.NewReader(content),
-		unicode.BOMOverride(unicode.UTF8.NewDecoder()),
-	).Read(content)
-	if err != nil {
+	if content, _, err = transform.Bytes(
+		unicode.BOMOverride(unicode.UTF8.NewDecoder()), content,
+	); err != nil {
 		log.Fatalln(err)
 	}
 
