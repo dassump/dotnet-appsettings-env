@@ -5,11 +5,9 @@ VERSION := $(shell git describe --tags)
 VERSION := $(if $(VERSION:-=),$(VERSION),unknown)
 
 GOCMD   := $(shell which go)
-GOROOT  := $(shell $(GOCMD) env GOROOT)
-GOPATH  := $(shell $(GOCMD) env GOPATH)
 GOCGO   := 0
 
-LDFLAGS   := -ldflags "-s -w -X main.app=$(APP) -X main.version=$(VERSION)"
+LDFLAGS   := -ldflags "-s -w -X main.version=$(VERSION)"
 MAKEFLAGS += --silent
 
 clean:
