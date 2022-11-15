@@ -7,10 +7,10 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"regexp"
 	"sort"
 	"strings"
 
+	"github.com/tidwall/jsonc"
 	"golang.org/x/text/encoding/unicode"
 	"golang.org/x/text/transform"
 )
@@ -25,8 +25,7 @@ var (
 	output    = flag.String("type", "k8s", "Output to Kubernetes (k8s) / Docker (docker) / Docker Compose (compose) / Bicep (bicep)")
 	separator = flag.String("separator", "__", "Separator character(s)")
 
-	comments = `(?m:\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$)`
-	format   = map[string]string{
+	format = map[string]string{
 		"k8s":     "- name: %q\n  value: %q\n",
 		"docker":  "%s=%q\n",
 		"compose": "%s: %q\n",
@@ -70,17 +69,17 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	content = regexp.MustCompile(comments).ReplaceAll(content, nil)
-
-	decoder := json.NewDecoder(bytes.NewReader(content))
+	reader := bytes.NewReader(jsonc.ToJSON(content))
+	decoder := json.NewDecoder(reader)
 	decoder.UseNumber()
 
 	if err := decoder.Decode(&objects); err != nil {
 		switch err := err.(type) {
 		case *json.SyntaxError:
 			newline := []byte("\n")
-			line := 1 + bytes.Count(content[:err.Offset], newline)
+			line := bytes.Count(content[:err.Offset], newline) + 1
 			column := int(err.Offset) - bytes.LastIndex(content[:err.Offset], newline) - len(newline)
+			lenght := int64(len(content))
 			near := int64(60)
 
 			before := err.Offset - near
@@ -89,8 +88,8 @@ func main() {
 			}
 
 			after := err.Offset + near
-			if err.Offset+near > int64(len(content)) {
-				after = int64(len(content))
+			if err.Offset+near > lenght {
+				after = lenght
 			}
 
 			log.Fatalf(
