@@ -128,6 +128,9 @@ func parser(in map[string]any, out map[string]string, root []string) {
 		case []any:
 			for key, value := range value.([]any) {
 				switch any(value).(type) {
+				case []any:
+					parser(map[string]any{fmt.Sprint(key): value}, out, keys)
+
 				case map[string]any:
 					parser(value.(map[string]any), out, append(keys, fmt.Sprint(key)))
 
